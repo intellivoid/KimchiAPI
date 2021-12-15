@@ -37,6 +37,4 @@
         {
             return (strlen($input) > $length) ? substr($input,0, $length).'...' : $input;
         }
-
-        public static function methodResigtratio
     }
