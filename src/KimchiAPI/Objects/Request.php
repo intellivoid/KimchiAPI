@@ -72,10 +72,10 @@
         /**
          * Constructs object from an array representation
          *
-         * @param array $dat
+         * @param array $data
          * @return Request
          */
-        public static function fromArray(array $dat): Request
+        public static function fromArray(array $data): Request
         {
             $request_object = new Request();
 
