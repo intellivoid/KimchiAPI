@@ -3,7 +3,7 @@ clean:
 
 build:
 	mkdir build
-	ppm --no-intro --compile="src/KimchiAPI" --directory="build"
+	ppm --no-intro --cerror --compile="src/KimchiAPI" --directory="build"
 
 update:
 	ppm --generate-package="src/KimchiAPI"
