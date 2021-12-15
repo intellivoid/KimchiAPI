@@ -5,7 +5,7 @@
     use Exception;
     use Throwable;
 
-    class MethodNotFondException extends Exception
+    class MethodNotFoundException extends Exception
     {
         /**
          * @param string $message

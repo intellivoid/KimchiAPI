@@ -3,9 +3,13 @@
     namespace KimchiAPI;
 
     // Define server information for response headers
+    use Exception;
     use KimchiAPI\Exceptions\MethodAlreadyRegisteredException;
+    use KimchiAPI\Exceptions\MethodNotFoundException;
     use KimchiAPI\Exceptions\MissingComponentsException;
     use KimchiAPI\Interfaces\MethodInterface;
+    use KimchiAPI\Objects\Request;
+    use KimchiAPI\Objects\Response;
     use KimchiAPI\Utilities\Converter;
     use RuntimeException;
 
@@ -73,6 +77,30 @@
             }
 
             $this->methods = $methods_clean;
+        }
+
+        /**
+         * Executes a method in the server and returns the response
+         *
+         * @param Request $request
+         * @return Response
+         */
+        public function executeMethod(Request $request): ?Response
+        {
+            if(isset($this->methods[$request->Method]) == false)
+            {
+                $truncated_method = Converter::truncateString($request->Method, 20);
+                return Response::fromException(new MethodNotFoundException("The requested method '" . $truncated_method . "' was not found."));
+            }
+
+            try
+            {
+                return $this->methods[$request->Method]->execute($request);
+            }
+            catch(Exception $e)
+            {
+                return Response::fromException($e);
+            }
         }
 
     }
