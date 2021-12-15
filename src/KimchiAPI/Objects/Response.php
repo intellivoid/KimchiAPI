@@ -4,6 +4,9 @@
 
     namespace KimchiAPI\Objects;
 
+    use Exception;
+    use KimchiRPC\Abstracts\Types\ProtocolType;
+
     class Response
     {
         /**
@@ -105,6 +108,22 @@
                 $response_object->ResultData = $data[0x005];
             if(isset($data["result_data"]))
                 $response_object->ResultData = $data["result_data"];
+
+            return $response_object;
+        }
+
+        /**
+         * Constructs a response from an exception
+         * @param Exception $exception
+         * @return Response
+         */
+        public static function fromException(Exception $exception): Response
+        {
+            $response_object = new Response();
+
+            $response_object->Success = false;
+            $response_object->ErrorCode = $exception->getCode();
+            $response_object->ErrorMessage = $exception->getMessage();
 
             return $response_object;
         }
