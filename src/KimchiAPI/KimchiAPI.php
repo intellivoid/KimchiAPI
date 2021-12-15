@@ -4,6 +4,9 @@
 
     // Define server information for response headers
     use KimchiAPI\Exceptions\MissingComponentsException;
+    use KimchiRPC\Abstracts\ServerMode;
+    use KimchiRPC\Abstracts\Types\ProtocolType;
+    use KimchiRPC\Utilities\Converter;
     use RuntimeException;
 
     if(defined("KIMCHI_API_SERVER") == false)
@@ -24,5 +27,14 @@
 
     class KimchiAPI
     {
+        /**
+         * Server constructor.
+         * @param string $server_name
+         */
+        public function __construct(string $server_name)
+        {
+            $this->methods = [];
+            $this->server_name = Converter::functionNameSafe($server_name);
+        }
 
     }
