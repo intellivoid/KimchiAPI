@@ -18,8 +18,46 @@
     "components": [
         {
             "required": true,
+            "file": "Abstracts/RequestMethod.php"
+        },
+        {
+            "required": true,
             "file": "KimchiAPI.php"
+        },
+        {
+            "required": true,
+            "file": "Exceptions/MissingComponentsException.php"
+        },
+        {
+            "required": true,
+            "file": "Exceptions/InternalServerException.php"
+        },
+        {
+            "required": true,
+            "file": "Exceptions/MethodAlreadyRegisteredException.php"
+        },
+        {
+            "required": true,
+            "file": "Exceptions/MethodNotFoundException.php"
+        },
+        {
+            "required": true,
+            "file": "Utilities/Converter.php"
+        },
+        {
+            "required": true,
+            "file": "Interfaces/MethodInterface.php"
+        },
+        {
+            "required": true,
+            "file": "Objects/Response.php"
+        },
+        {
+            "required": true,
+            "file": "Objects/Request.php"
         }
     ],
-    "files": []
+    "files": [
+        "package.json"
+    ]
 }
