@@ -3,7 +3,9 @@
     namespace KimchiAPI;
 
     // Define server information for response headers
+    use KimchiAPI\Exceptions\MethodAlreadyRegisteredException;
     use KimchiAPI\Exceptions\MissingComponentsException;
+    use KimchiAPI\Interfaces\MethodInterface;
     use KimchiAPI\Utilities\Converter;
     use RuntimeException;
 
@@ -40,6 +42,37 @@
         {
             $this->methods = [];
             $this->server_name = Converter::functionNameSafe($server_name);
+        }
+
+        /**
+         * @param MethodInterface $method
+         * @throws MethodAlreadyRegisteredException
+         */
+        public function registerMethod(MethodInterface $method)
+        {
+            if(isset($this->methods[$method->getVersion() . ':' . $method->getMethod()]))
+                throw new MethodAlreadyRegisteredException('The method ' . $method->getMethod() . ' (' . $method->getVersion() . ') is already registered');
+
+            $this->methods[$method->getVersion() . ':' . $method->getMethod()] = $method;
+            $this->reorderMethods();
+        }
+
+        /**
+         * Reorders the methods into alphabetical order
+         */
+        private function reorderMethods()
+        {
+            $method_reordered = array_keys($this->methods);
+            sort($method_reordered);
+            $methods_clean = [];
+
+            foreach($method_reordered as $method_name)
+            {
+                if(is_int($method_name) == false)
+                    $methods_clean[$method_name] = $this->methods[$method_name];
+            }
+
+            $this->methods = $methods_clean;
         }
 
     }

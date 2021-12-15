@@ -5,7 +5,6 @@
     namespace KimchiAPI\Objects;
 
     use Exception;
-    use KimchiRPC\Abstracts\Types\ProtocolType;
 
     class Response
     {
