@@ -18,19 +18,19 @@
     "components": [
         {
             "required": true,
+            "file": "Abstracts/Command.php"
+        },
+        {
+            "required": true,
             "file": "Abstracts/RequestMethod.php"
         },
         {
             "required": true,
-            "file": "KimchiAPI.php"
-        },
-        {
-            "required": true,
-            "file": "Exceptions/MissingComponentsException.php"
-        },
-        {
-            "required": true,
             "file": "Exceptions/InternalServerException.php"
+        },
+        {
+            "required": true,
+            "file": "Exceptions/IOException.php"
         },
         {
             "required": true,
@@ -42,7 +42,7 @@
         },
         {
             "required": true,
-            "file": "Utilities/Converter.php"
+            "file": "Exceptions/MissingComponentsException.php"
         },
         {
             "required": true,
@@ -50,11 +50,27 @@
         },
         {
             "required": true,
-            "file": "Objects/Response.php"
+            "file": "KimchiAPI.php"
+        },
+        {
+            "required": true,
+            "file": "Objects/Configuration/ServerConfiguration.php"
+        },
+        {
+            "required": true,
+            "file": "Objects/Configuration.php"
         },
         {
             "required": true,
             "file": "Objects/Request.php"
+        },
+        {
+            "required": true,
+            "file": "Objects/Response.php"
+        },
+        {
+            "required": true,
+            "file": "Utilities/Converter.php"
         }
     ],
     "files": [

@@ -37,4 +37,59 @@
         {
             return (strlen($input) > $length) ? substr($input,0, $length).'...' : $input;
         }
+
+        /**
+         * Sanitize Method
+         *
+         * @param string $command
+         * @return string
+         */
+        public static function sanitizeMethod(string $command): string
+        {
+            return str_replace(' ', '', self::ucWordsUnicode(str_replace('_', ' ', $command)));
+        }
+
+        /**
+         * Replace function `ucwords` for UTF-8 characters in the class definition and commands
+         *
+         * @param string $str
+         * @param string $encoding (default = 'UTF-8')
+         *
+         * @return string
+         */
+        public static function ucWordsUnicode(string $str, string $encoding = 'UTF-8'): string
+        {
+            return mb_convert_case($str, MB_CASE_TITLE, $encoding);
+        }
+
+        /**
+         * Replace function `ucfirst` for UTF-8 characters in the class definition and commands
+         *
+         * @param string $str
+         * @param string $encoding (default = 'UTF-8')
+         *
+         * @return string
+         */
+        public static function ucFirstUnicode(string $str, string $encoding = 'UTF-8'): string
+        {
+            return mb_strtoupper(mb_substr($str, 0, 1, $encoding), $encoding)
+                . mb_strtolower(mb_substr($str, 1, mb_strlen($str), $encoding), $encoding);
+        }
+
+        /**
+         * Get namespace from php file by src path
+         *
+         * @param string $src (absolute path to file)
+         * @return string|null
+         */
+        public static function getFileNamespace(string $src): ?string
+        {
+            $content = file_get_contents($src);
+            if (preg_match('#^\s*namespace\s+(.+?);#m', $content, $m))
+            {
+                return $m[1];
+            }
+
+            return null;
+        }
     }
