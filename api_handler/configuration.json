@@ -1,0 +1,33 @@
+{
+  "name": "Example API service",
+  "version": "1.0.0.0",
+  "author": "Zi Xing Narrakas",
+  "organization": "Intellivoid Technologies",
+  "configuration": {
+    "logging_enabled": true,
+    "root_path": "/test",
+    "framework_signature": true,
+    "api_signature": true,
+    "headers": {}
+  },
+  "versions": [
+    {
+      "version": "v1",
+      "enabled": true,
+      "namespace": "Methods\\v1",
+      "response_standard": "1.0",
+      "methods": [
+        {"method": ["GET", "POST"], "path": "ping", "class": "Ping", "params": []}
+      ]
+    },
+    {
+      "version": "v2",
+      "enabled": true,
+      "namespace": "Methods\\v2",
+      "response_standard": "2.0",
+      "methods": [
+        {"method": ["GET", "POST"], "path": "ping", "class": "Ping", "params": []}
+      ]
+    }
+  ]
+}
