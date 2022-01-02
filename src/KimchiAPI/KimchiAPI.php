@@ -1,14 +1,25 @@
 <?php
 
+    /** @noinspection PhpMissingFieldTypeInspection */
+
     namespace KimchiAPI;
 
-    // Define server information for response headers
-    use KimchiAPI\Abstracts\Command;
+    use Exception;
+    use khm\Exceptions\DatabaseException;
+    use KimchiAPI\Abstracts\Method;
+    use KimchiAPI\Classes\API;
     use KimchiAPI\Exceptions\IOException;
     use KimchiAPI\Exceptions\MissingComponentsException;
     use KimchiAPI\Utilities\Converter;
+    use ppm\Exceptions\AutoloaderException;
+    use ppm\Exceptions\InvalidComponentException;
+    use ppm\Exceptions\InvalidPackageLockException;
+    use ppm\Exceptions\PackageNotFoundException;
+    use ppm\Exceptions\VersionNotFoundException;
+    use ppm\ppm;
     use RuntimeException;
 
+    // Define server information for response headers
     if(defined("KIMCHI_API_SERVER") == false)
     {
         if(file_exists(__DIR__ . DIRECTORY_SEPARATOR . "package.json") == false)
@@ -70,7 +81,7 @@
         /**
          * Add a single custom commands path
          *
-         * @param string $path Custom commands path to add
+         * @param string $path Custom commands' path to add
          * @param bool $before If the path should be prepended or appended to the list
          * @throws IOException
          */
@@ -78,7 +89,7 @@
         {
             if (!is_dir($path))
             {
-                throw new IOException('Commands path "' . $path . '" does not exist.');
+                throw new IOException('Method path "' . $path . '" does not exist.');
             }
             elseif (!in_array($path, $this->commands_paths, true))
             {
@@ -115,17 +126,17 @@
          * @param string $command
          * @param string $filepath
          *
-         * @return Command|null
+         * @return Method|null
          */
-        public function getCommandObject(string $command, string $filepath = ''): ?Command
+        public function getCommandObject(string $command, string $filepath = ''): ?Method
         {
             if (isset($this->commands_objects[$command]))
             {
                 return $this->commands_objects[$command];
             }
 
-            $which = [Command::AUTH_SYSTEM];
-            $which[] = Command::AUTH_USER;
+            $which = [Method::AUTH_SYSTEM];
+            $which[] = Method::AUTH_USER;
 
             foreach ($which as $auth)
             {
@@ -163,7 +174,7 @@
             }
 
             // Start with default namespace.
-            $command_namespace = __NAMESPACE__ . '\\Commands\\' . $auth . 'Commands';
+            $command_namespace = __NAMESPACE__ . '\\Methods\\' . $auth . 'Methods';
 
             // Check if we can get the namespace from the file (if passed).
             if ($filepath && !($command_namespace = Converter::getFileNamespace($filepath)))
@@ -171,7 +182,7 @@
                 return null;
             }
 
-            $command_class = $command_namespace . '\\' . Converter::ucFirstUnicode($command) . 'Command';
+            $command_class = $command_namespace . '\\' . Converter::ucFirstUnicode($command) . 'Method';
 
             if (class_exists($command_class))
             {
@@ -179,5 +190,66 @@
             }
 
             return null;
+        }
+
+        /**
+         * @param string $package
+         * @param bool $import_dependencies
+         * @param bool $throw_error
+         * @throws AutoloaderException
+         * @throws Exceptions\ApiException
+         * @throws Exceptions\ConnectionBlockedException
+         * @throws Exceptions\InternalServerException
+         * @throws IOException
+         * @throws InvalidComponentException
+         * @throws InvalidPackageLockException
+         * @throws PackageNotFoundException
+         * @throws VersionNotFoundException
+         * @throws DatabaseException
+         */
+        public static function exec(string $package, bool $import_dependencies=true, bool $throw_error=true)
+        {
+            $decoded = explode('==', $package);
+            if($decoded[1] == 'latest')
+                $decoded[1] = ppm::getPackageLock()->getPackage($decoded[0])->getLatestVersion();
+            $path = ppm::getPackageLock()->getPackage($decoded[0])->getPackagePath($decoded[1]); // Find the package path
+            ppm::import($decoded[0], $decoded[1], $import_dependencies, $throw_error); // Import dependencies
+
+            $API = new API($path);
+            $API->initialize();
+            self::handleRequest($API);
+        }
+
+        /**
+         * Handles the request to the API
+         *
+         * @param API $API
+         * @param string|null $requestUrl
+         * @param string|null $requestMethod
+         * @return void
+         */
+        public static function handleRequest(API $API, ?string $requestUrl=null, string $requestMethod = null)
+        {
+            $match = $API->getRouter()->match($requestUrl, $requestMethod);
+
+            // call closure or throw 404 status
+            if(is_array($match) && is_callable($match['target']))
+            {
+                try
+                {
+                    call_user_func_array($match['target'], array_values($match['params']));
+                }
+                catch(Exception $e)
+                {
+                    var_dump($e);
+                    exit();
+                }
+            }
+            else
+            {
+                var_dump($API->getRouter()->getRoutes());
+                print("404");
+                exit();
+            }
         }
     }

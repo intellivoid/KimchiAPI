@@ -1,0 +1,35 @@
+{
+    "package": {
+        "package_name": "net.intellivoid.test_api",
+        "name": "Test API",
+        "version": "1.0.0.0",
+        "author": "Test",
+        "organization": "Test",
+        "description": "Test API",
+        "url": "https://example.com/",
+        "dependencies": [
+            {
+                "package": "net.intellivoid.kimchi_api",
+                "version": "latest",
+                "source": "default@github/intellivoid/KimchiAPI",
+                "required": true
+            }
+        ],
+        "configuration": {
+            "autoload_method": "generated_spl",
+            "main": null,
+            "post_installation": [],
+            "pre_installation": []
+        }
+    },
+    "components": [
+        {
+            "required": true,
+            "file": "Methods/v1/PingMethod.php"
+        }
+    ],
+    "files": [
+        "package.json",
+        "configuration.json"
+    ]
+}

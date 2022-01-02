@@ -7,7 +7,14 @@
         "organization": "Intellivoid Technologies",
         "description": "The API server that goes good with anything, even toothpaste!",
         "url": "https://github.com/intellivoid/KimchiAPI",
-        "dependencies": [],
+        "dependencies": [
+            {
+                "package": "net.intellivoid.khm",
+                "version": "latest",
+                "source": "default@github/intellivoid/khm",
+                "required": true
+            }
+        ],
         "configuration": {
             "autoload_method": "generated_spl",
             "main": null,
@@ -18,35 +25,23 @@
     "components": [
         {
             "required": true,
-            "file": "Abstracts/Command.php"
-        },
-        {
-            "required": true,
             "file": "Abstracts/RequestMethod.php"
         },
         {
             "required": true,
-            "file": "Exceptions/InternalServerException.php"
+            "file": "Abstracts/Method.php"
         },
         {
             "required": true,
-            "file": "Exceptions/IOException.php"
+            "file": "Classes/Router.php"
         },
         {
             "required": true,
-            "file": "Exceptions/MethodAlreadyRegisteredException.php"
+            "file": "Classes/Request.php"
         },
         {
             "required": true,
-            "file": "Exceptions/MethodNotFoundException.php"
-        },
-        {
-            "required": true,
-            "file": "Exceptions/MissingComponentsException.php"
-        },
-        {
-            "required": true,
-            "file": "Interfaces/MethodInterface.php"
+            "file": "Classes/API.php"
         },
         {
             "required": true,
@@ -54,15 +49,63 @@
         },
         {
             "required": true,
+            "file": "Exceptions/BadEnvironmentException.php"
+        },
+        {
+            "required": true,
+            "file": "Exceptions/MissingComponentsException.php"
+        },
+        {
+            "required": true,
+            "file": "Exceptions/InternalServerException.php"
+        },
+        {
+            "required": true,
+            "file": "Exceptions/ConnectionBlockedException.php"
+        },
+        {
+            "required": true,
+            "file": "Exceptions/MethodAlreadyRegisteredException.php"
+        },
+        {
+            "required": true,
+            "file": "Exceptions/IOException.php"
+        },
+        {
+            "required": true,
+            "file": "Exceptions/RouterException.php"
+        },
+        {
+            "required": true,
+            "file": "Exceptions/ApiException.php"
+        },
+        {
+            "required": true,
+            "file": "Exceptions/MethodNotFoundException.php"
+        },
+        {
+            "required": true,
+            "file": "Utilities/Converter.php"
+        },
+        {
+            "required": true,
+            "file": "Utilities/Client.php"
+        },
+        {
+            "required": true,
+            "file": "Interfaces/MethodInterface.php"
+        },
+        {
+            "required": true,
+            "file": "Objects/Configuration/MethodConfiguration.php"
+        },
+        {
+            "required": true,
+            "file": "Objects/Configuration/VersionConfiguration.php"
+        },
+        {
+            "required": true,
             "file": "Objects/Configuration/ServerConfiguration.php"
-        },
-        {
-            "required": true,
-            "file": "Objects/Configuration.php"
-        },
-        {
-            "required": true,
-            "file": "Objects/Request.php"
         },
         {
             "required": true,
@@ -70,7 +113,11 @@
         },
         {
             "required": true,
-            "file": "Utilities/Converter.php"
+            "file": "Objects/Request.php"
+        },
+        {
+            "required": true,
+            "file": "Objects/Configuration.php"
         }
     ],
     "files": [

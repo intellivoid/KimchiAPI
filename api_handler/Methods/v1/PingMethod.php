@@ -2,7 +2,7 @@
 
     namespace Methods\v1;
 
-    class Ping extends \KimchiAPI\Abstracts\Command
+    class PingMethod extends \KimchiAPI\Abstracts\Method
     {
 
         public function execute()

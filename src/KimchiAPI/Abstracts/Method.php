@@ -5,7 +5,7 @@
     use KimchiAPI\KimchiAPI;
     use KimchiAPI\Objects\Request;
 
-    abstract class Command
+    abstract class Method
     {
         /**
          * Auth level for user commands
