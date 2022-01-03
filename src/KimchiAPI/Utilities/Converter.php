@@ -2,51 +2,37 @@
 
     namespace KimchiAPI\Utilities;
 
+    use Exception;
+    use KimchiAPI\Abstracts\ResponseType;
+    use KimchiAPI\Exceptions\UnsupportedResponseTypeExceptions;
+    use Symfony\Component\Yaml\Yaml;
+    use ZiProto\ZiProto;
+
     class Converter
     {
         /**
-         * Converts the string to a function safe name
+         * Converts an exception to an array representation
          *
-         * @param string $input
-         * @return string
+         * @param Exception $e
+         * @return array
          */
-        public static function functionNameSafe(string $input): string
+        public static function exceptionToArray(Exception $e): array
         {
-            $out = preg_replace("/(?>[^\w\.])+/", "_", $input);
-            // Replace any underscores at start or end of the string.
-            if ($out[0] == "_")
+            $return_results = [
+                'file_path' => $e->getFile(),
+                'line' => $e->getLine(),
+                'code' => $e->getCode(),
+                'message' => $e->getMessage(),
+                'trace' => $e->getTrace()
+            ];
+
+            if($e->getPrevious() !== null)
             {
-                $out = substr($out, 1);
-            }
-            if ($out[-1] == "_")
-            {
-                $out = substr($out, 0, -1);
+                /** @noinspection PhpParamsInspection */
+                $return_results['previous'] = self::exceptionToArray($e->getPrevious());
             }
 
-            return $out;
-        }
-
-        /**
-         * Truncates a long string
-         *
-         * @param string $input
-         * @param int $length
-         * @return string
-         */
-        public static function truncateString(string $input, int $length): string
-        {
-            return (strlen($input) > $length) ? substr($input,0, $length).'...' : $input;
-        }
-
-        /**
-         * Sanitize Method
-         *
-         * @param string $command
-         * @return string
-         */
-        public static function sanitizeMethod(string $command): string
-        {
-            return str_replace(' ', '', self::ucWordsUnicode(str_replace('_', ' ', $command)));
+            return $return_results;
         }
 
         /**
@@ -91,5 +77,35 @@
             }
 
             return null;
+        }
+
+        /**
+         * Serializes the response
+         *
+         * @param array $data
+         * @param string $response_type
+         * @return string
+         * @throws UnsupportedResponseTypeExceptions
+         */
+        public static function serializeResponse(array $data, string $response_type): string
+        {
+            if($response_type == ResponseType::Automatic)
+                $response_type = ResponseType::Json;
+
+            switch($response_type)
+            {
+                case ResponseType::Json:
+                    return json_encode($data, JSON_UNESCAPED_SLASHES);
+
+                case ResponseType::ZiProto:
+                case ResponseType::Msgpack:
+                    return ZiProto::encode($data);
+
+                case ResponseType::Yaml:
+                    return Yaml::dump($data);
+
+                default:
+                    throw new UnsupportedResponseTypeExceptions('The response type \'' . $response_type . '\' is not supported by KimchiAPI');
+            }
         }
     }

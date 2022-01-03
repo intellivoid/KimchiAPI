@@ -13,6 +13,18 @@
                 "version": "latest",
                 "source": "default@github/intellivoid/khm",
                 "required": true
+            },
+            {
+                "package": "net.intellivoid.ziproto",
+                "version": "latest",
+                "source": "default@github/intellivoid/ziproto",
+                "required": true
+            },
+            {
+                "package": "com.symfony.yaml",
+                "version": "latest",
+                "source": "symfony@composer/yaml",
+                "required": true
             }
         ],
         "configuration": {
@@ -33,6 +45,14 @@
         },
         {
             "required": true,
+            "file": "Abstracts/ResponseType.php"
+        },
+        {
+            "required": true,
+            "file": "Abstracts/ResponseStandard.php"
+        },
+        {
+            "required": true,
             "file": "Classes/Router.php"
         },
         {
@@ -46,6 +66,10 @@
         {
             "required": true,
             "file": "KimchiAPI.php"
+        },
+        {
+            "required": true,
+            "file": "Exceptions/UnsupportedResponseStandardException.php"
         },
         {
             "required": true,
@@ -77,6 +101,10 @@
         },
         {
             "required": true,
+            "file": "Exceptions/UnsupportedResponseTypeExceptions.php"
+        },
+        {
+            "required": true,
             "file": "Exceptions/ApiException.php"
         },
         {
@@ -94,6 +122,10 @@
         {
             "required": true,
             "file": "Interfaces/MethodInterface.php"
+        },
+        {
+            "required": true,
+            "file": "Interfaces/ResponseStandardInterface.php"
         },
         {
             "required": true,
@@ -118,6 +150,22 @@
         {
             "required": true,
             "file": "Objects/Configuration.php"
+        },
+        {
+            "required": true,
+            "file": "Objects/ResponseStandards/KimchiAPI.php"
+        },
+        {
+            "required": true,
+            "file": "Objects/ResponseStandards/JsonApiOrg.php"
+        },
+        {
+            "required": true,
+            "file": "Objects/ResponseStandards/IntellivoidAPI.php"
+        },
+        {
+            "required": true,
+            "file": "Objects/ResponseStandards/GoogleAPI.php"
         }
     ],
     "files": [

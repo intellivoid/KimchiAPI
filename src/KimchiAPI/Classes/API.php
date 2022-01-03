@@ -6,10 +6,13 @@
 
     use khm\Exceptions\DatabaseException;
     use khm\khm;
+    use KimchiAPI\Abstracts\Method;
     use KimchiAPI\Exceptions\ApiException;
     use KimchiAPI\Exceptions\ConnectionBlockedException;
     use KimchiAPI\Exceptions\InternalServerException;
     use KimchiAPI\Exceptions\IOException;
+    use KimchiAPI\Exceptions\RouterException;
+    use KimchiAPI\KimchiAPI;
     use KimchiAPI\Objects\Configuration;
     use KimchiAPI\Utilities\Client;
 
@@ -64,6 +67,7 @@
          * @throws ApiException
          * @throws ConnectionBlockedException
          * @throws DatabaseException
+         * @throws RouterException
          */
         public function initialize()
         {
@@ -73,6 +77,7 @@
             define('KIMCHI_API_RESOURCES_PATH', $this->ResourcesPath);
             define('KIMCHI_API_CONFIGURATION_PATH', $this->ConfigurationFilePath);
             define('KIMCHI_API_NAME', $this->Configuration->Name);
+            define('KIMCHI_API_DEBUGGING_MODE', $this->Configuration->ServerConfiguration->DebuggingMode);
             define('KIMCHI_API_ROOT_PATH', $this->Configuration->ServerConfiguration->RootPath);
             define('KIMCHI_API_SIGNATURES', $this->Configuration->ServerConfiguration->ApiSignature);
             define('KIMCHI_API_FRAMEWORK_SIGNATURE', $this->Configuration->ServerConfiguration->FrameworkSignature);
@@ -119,7 +124,7 @@
 
         /**
          * @return void
-         * @throws \KimchiAPI\Exceptions\RouterException
+         * @throws RouterException
          */
         private function defineRoutes()
         {
@@ -130,8 +135,12 @@
                     $full_path = '/' . $version->Version . '/' . $method->Path;
                     $this->Router->map(implode('|', $method->Methods), $full_path, function() use ($version, $method, $full_path)
                     {
-                        print($full_path);
-                        exit();
+                        if(class_exists($method->Class) == false)
+                            throw new ApiException('API Method not found');
+
+                        /** @var Method $method_class */
+                        $method_class = new $method->Class;
+                        KimchiAPI::handleResponse($method_class->execute());
                     }, $version->Version . '/' . $method->Class);
                 }
             }

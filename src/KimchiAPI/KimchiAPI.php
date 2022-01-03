@@ -7,9 +7,16 @@
     use Exception;
     use khm\Exceptions\DatabaseException;
     use KimchiAPI\Abstracts\Method;
+    use KimchiAPI\Abstracts\ResponseStandard;
+    use KimchiAPI\Abstracts\ResponseType;
     use KimchiAPI\Classes\API;
     use KimchiAPI\Exceptions\IOException;
     use KimchiAPI\Exceptions\MissingComponentsException;
+    use KimchiAPI\Exceptions\UnsupportedResponseStandardException;
+    use KimchiAPI\Objects\Response;
+    use KimchiAPI\Objects\ResponseStandards\GoogleAPI;
+    use KimchiAPI\Objects\ResponseStandards\IntellivoidAPI;
+    use KimchiAPI\Objects\ResponseStandards\JsonApiOrg;
     use KimchiAPI\Utilities\Converter;
     use ppm\Exceptions\AutoloaderException;
     use ppm\Exceptions\InvalidComponentException;
@@ -241,15 +248,59 @@
                 }
                 catch(Exception $e)
                 {
-                    var_dump($e);
                     exit();
                 }
             }
             else
             {
-                var_dump($API->getRouter()->getRoutes());
                 print("404");
                 exit();
             }
+        }
+
+        /**
+         * Handles the response handler and returns the response data to the client
+         *
+         * @param Response $response
+         * @throws Exceptions\UnsupportedResponseTypeExceptions
+         * @throws UnsupportedResponseStandardException
+         */
+        public static function handleResponse(Response $response)
+        {
+            http_response_code($response->ResponseCode);
+
+            if($response->ResponseType == ResponseType::Automatic)
+                $response->ResponseType = ResponseType::Json;
+
+            switch($response->ResponseStandard)
+            {
+                case ResponseStandard::GoogleAPI:
+                    $response_data = GoogleAPI::convertToResponseStandard($response);
+                    break;
+
+                case ResponseStandard::IntellivoidAPI:
+                    $response_data = IntellivoidAPI::convertToResponseStandard($response);
+                    break;
+
+                case ResponseStandard::JsonApiOrg:
+                    $response_data = JsonApiOrg::convertToResponseStandard($response);
+                    break;
+
+                case ResponseStandard::KimchiAPI:
+                    $response_data = Objects\ResponseStandards\KimchiAPI::convertToResponseStandard($response);
+                    break;
+
+                default:
+                    throw new UnsupportedResponseStandardException('The response standard \'' . $response->ResponseStandard . '\' is not supported');
+            }
+
+            $return_results = Converter::serializeResponse($response_data, $response->ResponseType);
+            http_response_code($response->ResponseCode);
+            foreach($response->Headers as $header => $value)
+                header("$header: $value");
+            header('Content-Type: ' . $response->ResponseType);
+            header('Content-Length: ' . strlen($return_results));
+            print($return_results);
+            exit();
         }
     }

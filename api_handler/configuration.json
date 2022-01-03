@@ -3,6 +3,7 @@
   "configuration": {
     "logging_enabled": true,
     "root_path": "/test",
+    "debugging_mode": true,
     "framework_signature": true,
     "api_signature": true,
     "khm_enabled": true,
@@ -14,7 +15,7 @@
       "version": "v1",
       "enabled": true,
       "methods": [
-        {"methods": ["GET", "POST"], "path": "ping", "class": "PingMethod"}
+        {"methods": ["GET", "POST"], "path": "ping", "class": "\\Methods\\v1\\PingMethod"}
       ]
     }
   ]

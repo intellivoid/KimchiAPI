@@ -21,6 +21,13 @@
         public $RootPath;
 
         /**
+         * Indicates if debugging mode is enabled or not
+         *
+         * @var bool
+         */
+        public $DebuggingMode;
+
+        /**
          * Indicates if the framework signature headers are to be returned to the HTTP response
          *
          * @var bool
@@ -66,11 +73,12 @@
             return [
                 'logging_enabled' => (bool)$this->LoggingEnabled,
                 'root_path' => $this->RootPath,
+                'debugging_mode' => (bool)$this->DebuggingMode,
                 'framework_signature' => (bool)$this->FrameworkSignature,
                 'api_signature' => (bool)$this->ApiSignature,
-                'headers' => $this->Headers,
                 'khm_enabled' => (bool)$this->KhmEnabled,
-                'firewall_deny' => $this->FirewallDeny
+                'firewall_deny' => $this->FirewallDeny,
+                'headers' => $this->Headers
             ];
         }
 
@@ -89,6 +97,9 @@
 
             if(isset($data['root_path']))
                 $ServerConfigurationObject->RootPath = $data['root_path'];
+
+            if(isset($data['debugging_mode']))
+                $ServerConfigurationObject->DebuggingMode = $data['debugging_mode'];
 
             if(isset($data['framework_signature']))
                 $ServerConfigurationObject->FrameworkSignature = $data['framework_signature'];

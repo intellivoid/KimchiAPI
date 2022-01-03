@@ -2,11 +2,14 @@
 
     namespace Methods\v1;
 
+    use KimchiAPI\Objects\Response;
+
     class PingMethod extends \KimchiAPI\Abstracts\Method
     {
-
-        public function execute()
+        public function execute(): Response
         {
-            // TODO: Implement execute() method.
+            $response = new Response();
+            $response->ResultData = ['Foo' => 'Bar'];
+            return $response;
         }
     }

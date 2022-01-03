@@ -2,6 +2,9 @@
 
     namespace KimchiAPI\Interfaces;
 
+    use KimchiAPI\Objects\Request;
+    use KimchiAPI\Objects\Response;
+
     interface MethodInterface
     {
         /**
@@ -36,7 +39,6 @@
          * Executes the method by passing on the parameter
          *
          * @param Request $request
-         * @throws RequestException
          * @return Response
          */
         public function execute(Request $request): Response;
