@@ -97,9 +97,7 @@
                 throw new ApiException('The API Environment must be initialized before using VerboseAdventure');
 
             if(self::$VerboseAdventure == null)
-            {
-                self::$VerboseAdventure = new VerboseAdventure('KIMCHI_API_NAME');
-            }
+                self::$VerboseAdventure = new VerboseAdventure(KIMCHI_API_NAME);
 
             return self::$VerboseAdventure;
         }
@@ -113,6 +111,7 @@
          * @return void
          * @throws Exceptions\UnsupportedResponseTypeExceptions
          * @throws UnsupportedResponseStandardException
+         * @throws ApiException
          * @noinspection PhpIssetCanBeReplacedWithCoalesceInspection
          * @noinspection PhpRedundantCatchClauseInspection
          */
@@ -120,21 +119,29 @@
         {
             // set Request Url if it isn't passed as parameter
             if($requestUrl === null)
+            {
                 $requestUrl = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '/';
+            }
 
             // strip base path from request url
-            $requestUrl = substr($requestUrl, strlen(KIMCHI_API_ROOT_PATH));
+            $requestUrl = substr($requestUrl, strlen($API->getRouter()->getBasePath()));
 
             // Strip query string (?a=b) from Request Url
             /** @noinspection SpellCheckingInspection */
             if (($strpos = strpos($requestUrl, '?')) !== false)
+            {
                 $requestUrl = substr($requestUrl, 0, $strpos);
+            }
 
             // set Request Method if it isn't passed as a parameter
             if($requestMethod === null)
+            {
                 $requestMethod = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'GET';
+            }
 
-            self::$VerboseAdventure->log(EventType::INFO, $requestMethod . ' ' . $requestUrl, KIMCHI_API_REQUEST_ID);
+            define('KIMCHI_API_REQUEST_URL', $requestUrl);
+            define('KIMCHI_API_REQUEST_METHOD', $requestMethod);
+
             $match = $API->getRouter()->match($requestUrl, $requestMethod);
 
             // call closure or throw 404 status
@@ -146,12 +153,13 @@
                 }
                 catch(ApiMethodNotFoundException $e)
                 {
+
                     unset($e);
                     self::handle404();
                 }
                 catch(Exception $e)
                 {
-                    self::$VerboseAdventure->logException($e,  KIMCHI_API_REQUEST_ID);
+                    self::getVerboseAdventure()->logException($e,  KIMCHI_API_REQUEST_ID);
                     self::handleException($e);
                 }
             }
@@ -166,6 +174,7 @@
          * @param string $response_standard
          * @param string $response_type
          * @return void
+         * @throws ApiException
          * @throws Exceptions\UnsupportedResponseTypeExceptions
          * @throws UnsupportedResponseStandardException
          */
@@ -189,6 +198,7 @@
          * @param string $response_standard
          * @param string $response_type
          * @return void
+         * @throws ApiException
          * @throws Exceptions\UnsupportedResponseTypeExceptions
          * @throws UnsupportedResponseStandardException
          */
@@ -237,9 +247,11 @@
          * @param Response $response
          * @throws Exceptions\UnsupportedResponseTypeExceptions
          * @throws UnsupportedResponseStandardException
+         * @throws ApiException
          */
         public static function handleResponse(Response $response)
         {
+            self::getVerboseAdventure()->log(EventType::INFO, KIMCHI_API_REQUEST_METHOD . ' ' . KIMCHI_API_REQUEST_URL . ' ' . $response->ResponseCode, KIMCHI_API_REQUEST_ID);
             http_response_code($response->ResponseCode);
 
             if($response->ResponseType == ResponseType::Automatic)

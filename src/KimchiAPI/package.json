@@ -25,6 +25,18 @@
                 "version": "latest",
                 "source": "symfony@composer/yaml",
                 "required": true
+            },
+            {
+                "package": "com.symfony.uid",
+                "version": "latest",
+                "source": "symfony@composer/uid",
+                "required": true
+            },
+            {
+                "package": "net.intellivoid.verbose_adventure",
+                "version": "latest",
+                "source": "default@github/intellivoid/VerboseAdventure",
+                "required": true
             }
         ],
         "configuration": {

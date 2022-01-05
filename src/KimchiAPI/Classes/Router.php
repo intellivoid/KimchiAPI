@@ -203,7 +203,6 @@
          */
         public function match(?string $requestUrl=null, string $requestMethod = null)
         {
-
             $params = array();
             /** @noinspection PhpUnusedLocalVariableInspection */
             $match = false;
@@ -333,6 +332,14 @@
 
             }
             return "`^(?J)$route$`u";
+        }
+
+        /**
+         * @return string
+         */
+        public function getBasePath(): string
+        {
+            return $this->basePath;
         }
 
     }

@@ -3,7 +3,7 @@
   "configuration": {
     "logging_enabled": true,
     "root_path": "/test",
-    "debugging_mode": true,
+    "debugging_mode": false,
     "framework_signature": true,
     "api_signature": true,
     "khm_enabled": true,
