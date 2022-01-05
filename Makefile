@@ -8,6 +8,7 @@ build:
 
 update:
 	ppm --generate-package="src/KimchiAPI"
+	ppm --generate-package="api_handler"
 
 install:
 	ppm --no-intro --no-prompt --fix-conflict --install="build/net.intellivoid.kimchi_api.ppm"

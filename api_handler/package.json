@@ -25,6 +25,10 @@
     "components": [
         {
             "required": true,
+            "file": "Methods/v1/ParameterTestMethod.php"
+        },
+        {
+            "required": true,
             "file": "Methods/v1/PingMethod.php"
         }
     ],

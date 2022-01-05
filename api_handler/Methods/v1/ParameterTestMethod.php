@@ -2,14 +2,15 @@
 
     namespace Methods\v1;
 
+    use KimchiAPI\Classes\Request;
     use KimchiAPI\Objects\Response;
 
-    class PingMethod extends \KimchiAPI\Abstracts\Method
+    class ParameterTestMethod extends \KimchiAPI\Abstracts\Method
     {
         public function execute(): Response
         {
             $response = new Response();
-            $response->ResultData = "Pong!";
+            $response->ResultData = Request::getParameters();
             return $response;
         }
     }

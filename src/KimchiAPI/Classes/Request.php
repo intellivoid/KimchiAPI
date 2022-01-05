@@ -106,7 +106,8 @@
             return array_merge(
                 self::getGetParameters(),
                 self::getPostParameters(),
-                self::getDefinedDynamicParameters()
+                self::getDefinedDynamicParameters(),
+                self::getPostBody()
             );
         }
 
@@ -149,18 +150,21 @@
         /**
          * Returns the post body given by the client
          *
-         * @return string|null
+         * @return array
          */
-        public static function getPostBody(): ?string
+        public static function getPostBody(): array
         {
             $results = @file_get_contents('php://input');
 
             if($results == false)
                 $results = stream_get_contents(fopen('php://stdin', 'r'));
 
-            IF($results == false)
-                return null;
+            if($results == false)
+                return [];
 
-            return null;
+            $decoded = json_decode($results, true);
+            if($decoded == false)
+                return [];
+            return $decoded;
         }
     }

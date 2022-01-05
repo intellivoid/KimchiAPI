@@ -8,6 +8,7 @@
     use khm\khm;
     use KimchiAPI\Abstracts\Method;
     use KimchiAPI\Exceptions\ApiException;
+    use KimchiAPI\Exceptions\ApiMethodNotFoundException;
     use KimchiAPI\Exceptions\ConnectionBlockedException;
     use KimchiAPI\Exceptions\InternalServerException;
     use KimchiAPI\Exceptions\IOException;
@@ -136,7 +137,7 @@
                     $this->Router->map(implode('|', $method->Methods), $full_path, function() use ($version, $method, $full_path)
                     {
                         if(class_exists($method->Class) == false)
-                            throw new ApiException('API Method not found');
+                            throw new ApiMethodNotFoundException('API Method not found');
 
                         /** @var Method $method_class */
                         $method_class = new $method->Class;

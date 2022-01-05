@@ -10,6 +10,7 @@
     use KimchiAPI\Abstracts\ResponseStandard;
     use KimchiAPI\Abstracts\ResponseType;
     use KimchiAPI\Classes\API;
+    use KimchiAPI\Exceptions\ApiMethodNotFoundException;
     use KimchiAPI\Exceptions\IOException;
     use KimchiAPI\Exceptions\MissingComponentsException;
     use KimchiAPI\Exceptions\UnsupportedResponseStandardException;
@@ -46,173 +47,22 @@
     class KimchiAPI
     {
         /**
-         * @var array
-         */
-        private $commands_paths;
-
-        /**
-         * @var array
-         */
-        private $command_classes;
-
-        /**
-         * Server constructor.
-         */
-        public function __construct()
-        {
-            $this->commands_paths = [];
-            $this->command_classes = [];
-        }
-
-        /**
-         * Return the list of commands paths
-         *
-         * @return array
-         */
-        public function getCommandsPaths(): array
-        {
-            return $this->commands_paths;
-        }
-
-        /**
-         * Return the list of command classes
-         *
-         * @return array
-         */
-        public function getCommandClasses(): array
-        {
-            return $this->command_classes;
-        }
-
-
-        /**
-         * Add a single custom commands path
-         *
-         * @param string $path Custom commands' path to add
-         * @param bool $before If the path should be prepended or appended to the list
-         * @throws IOException
-         */
-        public function addCommandsPath(string $path, bool $before=true)
-        {
-            if (!is_dir($path))
-            {
-                throw new IOException('Method path "' . $path . '" does not exist.');
-            }
-            elseif (!in_array($path, $this->commands_paths, true))
-            {
-                if ($before)
-                {
-                    array_unshift($this->commands_paths, $path);
-                }
-                else
-                {
-                    $this->commands_paths[] = $path;
-                }
-            }
-        }
-
-        /**
-         * Add multiple custom commands paths
-         *
-         * @param array $paths Custom commands paths to add
-         * @param bool $before If the paths should be prepended or appended to the list
-         * @throws IOException
-         */
-        public function addCommandsPaths(array $paths, bool $before=true)
-        {
-            foreach ($paths as $path)
-            {
-                $this->addCommandsPath($path, $before);
-            }
-        }
-
-
-        /**
-         * Get an object instance of the passed command
-         *
-         * @param string $command
-         * @param string $filepath
-         *
-         * @return Method|null
-         */
-        public function getCommandObject(string $command, string $filepath = ''): ?Method
-        {
-            if (isset($this->commands_objects[$command]))
-            {
-                return $this->commands_objects[$command];
-            }
-
-            $which = [Method::AUTH_SYSTEM];
-            $which[] = Method::AUTH_USER;
-
-            foreach ($which as $auth)
-            {
-                $command_class = $this->getCommandClassName($auth, $command, $filepath);
-
-                if ($command_class)
-                {
-                    return new $command_class();
-                }
-            }
-
-            return null;
-        }
-
-        /**
-         * Get classname of predefined commands
-         *
-         * @see command_classes
-         *
-         * @param string $auth     Auth of command
-         * @param string $command  Command name
-         * @param string $filepath Path to the command file
-         *
-         * @return string|null
-         */
-        public function getCommandClassName(string $auth, string $command, string $filepath = ''): ?string
-        {
-            $command = mb_strtolower($command);
-            $auth = Converter::ucFirstUnicode($auth);
-
-            // First, check for directly assigned command class.
-            if ($command_class = $this->command_classes[$auth][$command] ?? null)
-            {
-                return $command_class;
-            }
-
-            // Start with default namespace.
-            $command_namespace = __NAMESPACE__ . '\\Methods\\' . $auth . 'Methods';
-
-            // Check if we can get the namespace from the file (if passed).
-            if ($filepath && !($command_namespace = Converter::getFileNamespace($filepath)))
-            {
-                return null;
-            }
-
-            $command_class = $command_namespace . '\\' . Converter::ucFirstUnicode($command) . 'Method';
-
-            if (class_exists($command_class))
-            {
-                return $command_class;
-            }
-
-            return null;
-        }
-
-        /**
          * @param string $package
          * @param bool $import_dependencies
          * @param bool $throw_error
          * @throws AutoloaderException
+         * @throws DatabaseException
          * @throws Exceptions\ApiException
          * @throws Exceptions\ConnectionBlockedException
          * @throws Exceptions\InternalServerException
+         * @throws Exceptions\RouterException
+         * @throws Exceptions\UnsupportedResponseTypeExceptions
          * @throws IOException
          * @throws InvalidComponentException
          * @throws InvalidPackageLockException
          * @throws PackageNotFoundException
+         * @throws UnsupportedResponseStandardException
          * @throws VersionNotFoundException
-         * @throws DatabaseException
          */
         public static function exec(string $package, bool $import_dependencies=true, bool $throw_error=true)
         {
@@ -234,6 +84,8 @@
          * @param string|null $requestUrl
          * @param string|null $requestMethod
          * @return void
+         * @throws Exceptions\UnsupportedResponseTypeExceptions
+         * @throws UnsupportedResponseStandardException
          */
         public static function handleRequest(API $API, ?string $requestUrl=null, string $requestMethod = null)
         {
@@ -246,17 +98,91 @@
                 {
                     call_user_func_array($match['target'], array_values($match['params']));
                 }
+                catch(ApiMethodNotFoundException $e)
+                {
+                    unset($e);
+                    self::handle404();
+                }
                 catch(Exception $e)
                 {
-                    exit();
+                    self::handleException($e);
                 }
             }
-            else
-            {
-                print("404");
-                exit();
-            }
+
+            self::handle404();
         }
+
+        /**
+         * Handles an exception response
+         *
+         * @param Exception $exception
+         * @param string $response_standard
+         * @param string $response_type
+         * @return void
+         * @throws Exceptions\UnsupportedResponseTypeExceptions
+         * @throws UnsupportedResponseStandardException
+         */
+        public static function handleException(Exception $exception, string $response_standard = ResponseStandard::KimchiAPI, string $response_type = ResponseType::Json)
+        {
+            $response = new Response();
+            $response->ResponseCode = 500;
+            $response->Success = false;
+            $response->ErrorCode = $exception->getCode();
+            $response->ErrorMessage = 'There was an internal server error while trying to process your request';
+            $response->Exception = $exception;
+            $response->ResponseStandard = ResponseStandard::KimchiAPI;
+            $response->ResponseType = ResponseType::Json;
+
+            self::handleResponse($response);
+        }
+
+        /**
+         * Returns a 404 response
+         *
+         * @param string $response_standard
+         * @param string $response_type
+         * @return void
+         * @throws Exceptions\UnsupportedResponseTypeExceptions
+         * @throws UnsupportedResponseStandardException
+         */
+        public static function handle404(string $response_standard = ResponseStandard::KimchiAPI, string $response_type = ResponseType::Json)
+        {
+            $response = new Response();
+            $response->ResponseCode = 404;
+            $response->Success = false;
+            $response->ErrorCode = 404;
+            $response->ErrorMessage = 'The requested resource/action is invalid or not found';
+            $response->ResponseStandard = $response_standard;
+            $response->ResponseType = $response_type;
+
+            self::handleResponse($response);
+        }
+
+        /**
+         * Returns the headers used for framework
+         *
+         * @return array
+         */
+        public static function getFrameworkHeaders(): array
+        {
+            return [
+                'X-Organization' => KIMCHI_API_SERVER_ORGANIZATION,
+                'X-Powered-By' => 'KimchiAPI/' . KIMCHI_API_SERVER_VERSION
+            ];
+        }
+
+        /**
+         * Returns the headers for the API
+         *
+         * @return array
+         */
+        public static function getApiHeaders(): array
+        {
+            return [
+                'X-API' => KIMCHI_API_NAME
+            ];
+        }
+
 
         /**
          * Handles the response handler and returns the response data to the client
@@ -296,6 +222,16 @@
 
             $return_results = Converter::serializeResponse($response_data, $response->ResponseType);
             http_response_code($response->ResponseCode);
+            if(defined('KIMCHI_API_FRAMEWORK_SIGNATURE') && KIMCHI_API_FRAMEWORK_SIGNATURE)
+            {
+                foreach(self::getFrameworkHeaders() as $header => $value)
+                    header("$header: $value");
+            }
+            if(defined('KIMCHI_API_SIGNATURES') && KIMCHI_API_SIGNATURES)
+            {
+                foreach(self::getApiHeaders() as $header => $value)
+                    header("$header: $value");
+            }
             foreach($response->Headers as $header => $value)
                 header("$header: $value");
             header('Content-Type: ' . $response->ResponseType);

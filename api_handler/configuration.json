@@ -15,7 +15,8 @@
       "version": "v1",
       "enabled": true,
       "methods": [
-        {"methods": ["GET", "POST"], "path": "ping", "class": "\\Methods\\v1\\PingMethod"}
+        {"methods": ["GET", "POST"], "path": "ping", "class": "\\Methods\\v1\\PingMethod"},
+        {"methods": ["GET", "POST"], "path": "parameter_test", "class": "\\Methods\\v1\\ParameterTestMethod"}
       ]
     }
   ]
