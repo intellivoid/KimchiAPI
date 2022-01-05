@@ -6,10 +6,10 @@
 
     use Exception;
     use khm\Exceptions\DatabaseException;
-    use KimchiAPI\Abstracts\Method;
     use KimchiAPI\Abstracts\ResponseStandard;
     use KimchiAPI\Abstracts\ResponseType;
     use KimchiAPI\Classes\API;
+    use KimchiAPI\Exceptions\ApiException;
     use KimchiAPI\Exceptions\ApiMethodNotFoundException;
     use KimchiAPI\Exceptions\IOException;
     use KimchiAPI\Exceptions\MissingComponentsException;
@@ -26,6 +26,9 @@
     use ppm\Exceptions\VersionNotFoundException;
     use ppm\ppm;
     use RuntimeException;
+    use Symfony\Component\Uid\Uuid;
+    use VerboseAdventure\Abstracts\EventType;
+    use VerboseAdventure\VerboseAdventure;
 
     // Define server information for response headers
     if(defined("KIMCHI_API_SERVER") == false)
@@ -46,6 +49,11 @@
 
     class KimchiAPI
     {
+        /**
+         * @var VerboseAdventure
+         */
+        private static $VerboseAdventure;
+
         /**
          * @param string $package
          * @param bool $import_dependencies
@@ -78,6 +86,25 @@
         }
 
         /**
+         * Returns a VerboseAdventure instance, creates one if none exists.
+         *
+         * @return VerboseAdventure
+         * @throws ApiException
+         */
+        public static function getVerboseAdventure(): VerboseAdventure
+        {
+            if(defined('KIMCHI_API_INITIALIZED') == false)
+                throw new ApiException('The API Environment must be initialized before using VerboseAdventure');
+
+            if(self::$VerboseAdventure == null)
+            {
+                self::$VerboseAdventure = new VerboseAdventure('KIMCHI_API_NAME');
+            }
+
+            return self::$VerboseAdventure;
+        }
+
+        /**
          * Handles the request to the API
          *
          * @param API $API
@@ -86,9 +113,28 @@
          * @return void
          * @throws Exceptions\UnsupportedResponseTypeExceptions
          * @throws UnsupportedResponseStandardException
+         * @noinspection PhpIssetCanBeReplacedWithCoalesceInspection
+         * @noinspection PhpRedundantCatchClauseInspection
          */
         public static function handleRequest(API $API, ?string $requestUrl=null, string $requestMethod = null)
         {
+            // set Request Url if it isn't passed as parameter
+            if($requestUrl === null)
+                $requestUrl = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '/';
+
+            // strip base path from request url
+            $requestUrl = substr($requestUrl, strlen(KIMCHI_API_ROOT_PATH));
+
+            // Strip query string (?a=b) from Request Url
+            /** @noinspection SpellCheckingInspection */
+            if (($strpos = strpos($requestUrl, '?')) !== false)
+                $requestUrl = substr($requestUrl, 0, $strpos);
+
+            // set Request Method if it isn't passed as a parameter
+            if($requestMethod === null)
+                $requestMethod = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'GET';
+
+            self::$VerboseAdventure->log(EventType::INFO, $requestMethod . ' ' . $requestUrl, KIMCHI_API_REQUEST_ID);
             $match = $API->getRouter()->match($requestUrl, $requestMethod);
 
             // call closure or throw 404 status
@@ -105,6 +151,7 @@
                 }
                 catch(Exception $e)
                 {
+                    self::$VerboseAdventure->logException($e,  KIMCHI_API_REQUEST_ID);
                     self::handleException($e);
                 }
             }
@@ -122,7 +169,7 @@
          * @throws Exceptions\UnsupportedResponseTypeExceptions
          * @throws UnsupportedResponseStandardException
          */
-        public static function handleException(Exception $exception, string $response_standard = ResponseStandard::KimchiAPI, string $response_type = ResponseType::Json)
+        public static function handleException(Exception $exception, string $response_standard=ResponseStandard::KimchiAPI, string $response_type=ResponseType::Json)
         {
             $response = new Response();
             $response->ResponseCode = 500;
@@ -234,6 +281,10 @@
             }
             foreach($response->Headers as $header => $value)
                 header("$header: $value");
+            if(defined('KIMCHI_API_REQUEST_ID'))
+            {
+                header('X-Request-ID: ' . KIMCHI_API_REQUEST_ID);
+            }
             header('Content-Type: ' . $response->ResponseType);
             header('Content-Length: ' . strlen($return_results));
             print($return_results);

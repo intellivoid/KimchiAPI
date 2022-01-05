@@ -16,6 +16,7 @@
     use KimchiAPI\KimchiAPI;
     use KimchiAPI\Objects\Configuration;
     use KimchiAPI\Utilities\Client;
+    use Symfony\Component\Uid\Uuid;
 
     class API
     {
@@ -84,6 +85,7 @@
             define('KIMCHI_API_FRAMEWORK_SIGNATURE', $this->Configuration->ServerConfiguration->FrameworkSignature);
             define('KIMCHI_API_LOGGING_ENABLED', $this->Configuration->ServerConfiguration->LoggingEnabled);
             define('KIMCHI_API_HEADERS', $this->Configuration->ServerConfiguration->Headers);
+            define('KIMCHI_API_REQUEST_ID', Uuid::v1()->toRfc4122());
 
             $this->defineClientDefinitions();
             $this->defineRoutes();

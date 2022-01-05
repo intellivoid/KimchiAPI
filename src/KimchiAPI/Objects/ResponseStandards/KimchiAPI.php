@@ -17,6 +17,7 @@
             {
                 return [
                     'status' => true,
+                    'request_id' => KIMCHI_API_REQUEST_ID,
                     'result' => $response->ResultData
                 ];
             }
@@ -26,6 +27,7 @@
                 {
                     return [
                         'status' => false,
+                        'request_id' => KIMCHI_API_REQUEST_ID,
                         'error_code' => $response->ErrorCode,
                         'description' => $response->ErrorMessage,
                         'exception' => ($response->Exception == null ? null : Converter::exceptionToArray($response->Exception))
@@ -34,6 +36,7 @@
 
                 return [
                     'status' => false,
+                    'request_id' => KIMCHI_API_REQUEST_ID,
                     'error_code' => $response->ErrorCode,
                     'description' => $response->ErrorMessage
                 ];
