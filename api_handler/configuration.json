@@ -16,7 +16,9 @@
       "enabled": true,
       "methods": [
         {"methods": ["GET", "POST"], "path": "ping", "class": "\\Methods\\v1\\PingMethod"},
-        {"methods": ["GET", "POST"], "path": "parameter_test", "class": "\\Methods\\v1\\ParameterTestMethod"}
+        {"methods": ["GET", "POST"], "path": "parameter_test", "class": "\\Methods\\v1\\ParameterTestMethod"},
+        {"methods": ["GET", "POST"], "path": "auth/simple", "class": "\\Methods\\v1\\AuthenticationTestMethod"},
+        {"methods": ["GET", "POST"], "path": "auth/user", "class": "\\Methods\\v1\\UserAuthenticationTestMethod"}
       ]
     }
   ]

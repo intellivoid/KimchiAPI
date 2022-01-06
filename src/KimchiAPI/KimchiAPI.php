@@ -9,8 +9,11 @@
     use KimchiAPI\Abstracts\ResponseStandard;
     use KimchiAPI\Abstracts\ResponseType;
     use KimchiAPI\Classes\API;
+    use KimchiAPI\Classes\Request;
+    use KimchiAPI\Exceptions\AccessKeyNotProvidedException;
     use KimchiAPI\Exceptions\ApiException;
     use KimchiAPI\Exceptions\ApiMethodNotFoundException;
+    use KimchiAPI\Exceptions\AuthenticationNotProvidedException;
     use KimchiAPI\Exceptions\IOException;
     use KimchiAPI\Exceptions\MissingComponentsException;
     use KimchiAPI\Exceptions\UnsupportedResponseStandardException;
@@ -18,6 +21,7 @@
     use KimchiAPI\Objects\ResponseStandards\GoogleAPI;
     use KimchiAPI\Objects\ResponseStandards\IntellivoidAPI;
     use KimchiAPI\Objects\ResponseStandards\JsonApiOrg;
+    use KimchiAPI\Objects\UserAuthentication;
     use KimchiAPI\Utilities\Converter;
     use ppm\Exceptions\AutoloaderException;
     use ppm\Exceptions\InvalidComponentException;
@@ -26,7 +30,6 @@
     use ppm\Exceptions\VersionNotFoundException;
     use ppm\ppm;
     use RuntimeException;
-    use Symfony\Component\Uid\Uuid;
     use VerboseAdventure\Abstracts\EventType;
     use VerboseAdventure\VerboseAdventure;
 
@@ -153,9 +156,13 @@
                 }
                 catch(ApiMethodNotFoundException $e)
                 {
-
                     unset($e);
                     self::handle404();
+                }
+                catch(AccessKeyNotProvidedException|AuthenticationNotProvidedException $e)
+                {
+                    unset($e);
+                    self::requireAuthentication(KIMCHI_API_NAME);
                 }
                 catch(Exception $e)
                 {
@@ -216,6 +223,31 @@
         }
 
         /**
+         * Returns an authentication required header
+         *
+         * @param string $realm
+         * @param string $response_standard
+         * @param string $response_type
+         * @return void
+         * @throws ApiException
+         * @throws Exceptions\UnsupportedResponseTypeExceptions
+         * @throws UnsupportedResponseStandardException
+         */
+        public static function requireAuthentication(string $realm, string $response_standard = ResponseStandard::KimchiAPI, string $response_type = ResponseType::Json)
+        {
+            $response = new Response();
+            $response->ResponseCode = 401;
+            $response->Success = false;
+            $response->ErrorCode = 401;
+            $response->ErrorMessage = 'Unauthorized';
+            $response->ResponseStandard = $response_standard;
+            $response->ResponseType = $response_type;
+            $response->Headers['WWW-Authenticate'] = 'Basic realm="' . $realm . '"';
+
+            self::handleResponse($response);
+        }
+
+        /**
          * Returns the headers used for framework
          *
          * @return array
@@ -239,7 +271,6 @@
                 'X-API' => KIMCHI_API_NAME
             ];
         }
-
 
         /**
          * Handles the response handler and returns the response data to the client
@@ -301,5 +332,57 @@
             header('Content-Length: ' . strlen($return_results));
             print($return_results);
             exit();
+        }
+
+        /**
+         * Returns a username and password authentication
+         *
+         * @return UserAuthentication
+         * @throws AuthenticationNotProvidedException
+         */
+        public static function getUserAuthentication(): UserAuthentication
+        {
+            if(isset($_SERVER['PHP_AUTH_USER']) == false)
+            {
+                $parameters = Request::getParameters();
+
+                if(isset($parameters['username']) && isset($parameters['password']))
+                {
+                    $authentication_results = new UserAuthentication();
+                    $authentication_results->Username = $parameters['username'];
+                    $authentication_results->Password = $parameters['password'];
+                    return $authentication_results;
+                }
+
+                throw new AuthenticationNotProvidedException('Authentication required, 401 unauthorized');
+            }
+
+            $authentication_results = new UserAuthentication();
+            $authentication_results->Username = $_SERVER['PHP_AUTH_USER'];
+            $authentication_results->Password = $_SERVER['PHP_AUTH_PW'];
+
+            return $authentication_results;
+        }
+
+        /**
+         * Attempts to fetch the authentication token
+         *
+         * @param string $parameter_name
+         * @return string
+         * @throws AccessKeyNotProvidedException
+         */
+        public static function getAuthenticationToken(string $parameter_name='access_key'): string
+        {
+            if(isset($_SERVER['PHP_AUTH_USER']) == false)
+            {
+                $parameters = Request::getParameters();
+
+                if(isset($parameters[$parameter_name]) && is_string($parameters[$parameter_name]))
+                    return (string)$parameters[$parameter_name];
+
+                throw new AccessKeyNotProvidedException('Authentication required, 401 unauthorized');
+            }
+
+            return $_SERVER['PHP_AUTH_PW'];
         }
     }

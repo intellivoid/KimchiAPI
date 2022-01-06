@@ -29,7 +29,15 @@
         },
         {
             "required": true,
+            "file": "Methods/v1/UserAuthenticationTestMethod.php"
+        },
+        {
+            "required": true,
             "file": "Methods/v1/PingMethod.php"
+        },
+        {
+            "required": true,
+            "file": "Methods/v1/AuthenticationTestMethod.php"
         }
     ],
     "files": [

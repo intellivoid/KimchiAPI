@@ -89,6 +89,10 @@
         },
         {
             "required": true,
+            "file": "Exceptions/AuthenticationNotProvidedException.php"
+        },
+        {
+            "required": true,
             "file": "Exceptions/MissingComponentsException.php"
         },
         {
@@ -98,6 +102,10 @@
         {
             "required": true,
             "file": "Exceptions/InternalServerException.php"
+        },
+        {
+            "required": true,
+            "file": "Exceptions/AccessKeyNotProvidedException.php"
         },
         {
             "required": true,
@@ -142,6 +150,10 @@
         {
             "required": true,
             "file": "Interfaces/ResponseStandardInterface.php"
+        },
+        {
+            "required": true,
+            "file": "Objects/UserAuthentication.php"
         },
         {
             "required": true,
